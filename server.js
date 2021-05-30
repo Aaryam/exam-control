@@ -74,20 +74,22 @@ io.on('connection', function (socket) {
     let now = new Date();
     let output = "[" + `${now.toTimeString().split(" ")[0]}` + "] " + users[socket.id] + " has logged off";
 
-    console.log(output)
+    if (users[socket.id] != undefined && users[socket.id] != null) {
+      console.log(output)
 
-    fs.appendFile(`/Users/aaryanpatnaik/Documents/Projects/Node/School/examlog.txt`, '\r\n' + output, err => {
-      if (err) {
-        console.error(err)
-        return
-      }
-    })
+      fs.appendFile(`/Users/aaryanpatnaik/Documents/Projects/Node/School/examlog.txt`, '\r\n' + output, err => {
+        if (err) {
+          console.error(err)
+          return
+        }
+      })
+    }
 
     delete users[socket.id];
   });
 
   socket.on('studentnotfocused', function (data) {
-    if (data.isFocused == true) {
+    if (data.isFocused == true && data.student != null && data.student != undefined) {
       let now = new Date();
       let output = "[" + `${now.toTimeString().split(" ")[0]}` + "] " + data.student + "'s tab is in focus.";
       console.log(output)
