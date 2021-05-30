@@ -1,17 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>School'd</title>
     <script src="/socket.io/socket.io.js"></script>
 </head>
+<style>
+    body {
+        background-color: rgb(17, 17, 34);
+    }
+
+    input {
+        padding: 10px;
+        border: none;
+        background-color: rgb(248, 248, 248);
+        border-radius: 10px;
+        outline: none;
+        transition: all ease-in-out 0.2s;
+        color: rgb(29, 32, 36);
+        width: 400px;
+        margin-right: 1%;
+    }
+
+    input::placeholder {
+        color: rgb(29, 32, 36);
+    }
+
+    input:hover {
+        background-color: rgb(250, 250, 250);
+    }
+
+    input:focus {
+        background-color: rgb(250, 250, 250);
+    }
+
+    button {
+        background-color: transparent;
+        outline: none;
+        border: none;
+    }
+
+    .btn {
+        padding: 10px;
+        border: none;
+        background-color: rgb(248, 248, 248);
+        border-radius: 10px;
+        outline: none;
+        transition: all ease-in-out 0.2s;
+        color: rgb(29, 32, 36);
+    }
+
+    .btn:hover {
+        background-color: rgb(250, 250, 250);
+    }
+
+    textarea {
+        padding: 20px;
+        border: none;
+        border-radius: 2px;
+        background-color: rgb(248, 248, 248);
+        outline: none;
+        transition: all ease-in-out 0.2s;
+        color: rgb(29, 32, 36);
+        width: 40%;
+        height: 600px;
+        resize: none;
+        font-family: Arial, Helvetica, sans-serif;
+        float: right;
+        font-size: 16px;
+        margin-top: 35px;
+        margin-right: 20px;
+    }
+
+    textarea:hover {
+        transition: all ease-in-out 0.2s;
+        background-color: rgb(250, 250, 250);
+    }
+
+    textarea:focus {
+        background-color: rgb(250, 250, 250);
+    }
+
+    #qp {
+        overflow-x: hidden;
+        overflow-y: auto;
+        text-align: justify;
+        float: left;
+        cursor: not-allowed;
+        padding: 20px;
+        border: none;
+        border-radius: 2px;
+        background-color: rgb(248, 248, 248);
+        outline: none;
+        transition: all ease-in-out 0.2s;
+        color: rgb(29, 32, 36);
+        width: 40%;
+        height: 600px;
+        resize: none;
+        font-family: Arial, Helvetica, sans-serif;
+        margin-left: 160px;
+        font-size: 16px;
+        margin-top: 35px;
+    }
+
+    .sidenav {
+        height: 100%;
+        /* Full-height: remove this if you want "auto" height */
+        width: 120px;
+        /* Set the width of the sidebar */
+        position: fixed;
+        /* Fixed Sidebar (stay in place on scroll) */
+        z-index: 1;
+        /* Stay on top */
+        top: 0;
+        /* Stay at the top */
+        left: 0;
+        background-color: #111;
+        /* Black */
+        overflow-x: hidden;
+        /* Disable horizontal scroll */
+        padding-top: 20px;
+    }
+
+    /* The navigation menu links */
+    .sidenav button {
+        padding: 6px 8px 6px 16px;
+        text-decoration: none;
+        font-size: 16px;
+        color: #ffffff;
+        display: block;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* When you mouse over the navigation links, change their color */
+    .sidenav button:hover {
+        color: #f1f1f1;
+    }
+
+    /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+    @media screen and (max-height: 450px) {
+        .sidenav {
+            padding-top: 15px;
+        }
+
+        .sidenav a {
+            font-size: 18px;
+        }
+    }
+</style>
+
 <body>
-    
+    <center>
+        <p id="error-container"></p>
+        <input type="text" placeholder="Enter your name" id="name" autocomplete="off">
+        <button class="btn" onclick="setUsername()">Set name</button>
+    </center>
 </body>
 <script>
 
     var socket = io();
+
 
     function setUsername() {
         socket.emit('setUsername', document.getElementById('name').value);
@@ -22,21 +172,35 @@
     });
     socket.on('userSet', function (data) {
         user = data.username;
-        document.body.innerHTML = '<center><input type = "text" id = "message" class="inputbox">\
-         <button type = "button" name = "button" onclick = "sendMessage()" class="mainbutton">Send</button></center>\
-         <div id = "message-container"></div>';
+        document.body.innerHTML = '<div class="sidenav"><button id="button" onclick="sendMessage()">Submit</button></div><div id="qp"></div><textarea id="answersheet"></textarea>';
+        socket.emit('login', data.username)
     });
+
+    socket.on('examcontent', function (data) {
+        document.getElementById('qp').innerText = data;
+    });
+
+    socket.on('finishexam', function (data) {
+        if (data == user)
+        {
+            window.location.reload();
+        }
+    });
+
     function sendMessage() {
-        var msg = document.getElementById('message').value;
-        if (msg) {
-            socket.emit('msg', { message: msg, user: user });
+        var submission = document.getElementById('answersheet').value;
+        if (submission) {
+            socket.emit('submitexam', { submission: submission, user: user });
         }
     }
-    socket.on('newmsg', function (data) {
-        if (user) {
-            document.getElementById('message-container').innerHTML += '<div>' +
-                data.user + ': ' + data.message + '</div>'
-        }
-    })
+
+    window.onfocus = function () {
+        socket.emit("studentnotfocused", {student: user, isFocused: true});
+    }
+
+    window.onblur = function () {
+        socket.emit("studentnotfocused", {student: user, isFocused: false});
+    }
 </script>
+
 </html>

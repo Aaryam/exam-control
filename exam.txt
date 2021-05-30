@@ -1,0 +1,7 @@
+Question Paper
+
+Q1) What is the fractional value of Pi?
+Q2) Name 5 different data types.
+Q3) What is the difference between the lossless and lossy file compression.
+Q4) What type of compression do JPG files use?
+Q5) Name 10 different programming languages, and write an 'if' statement for 3 of them.
